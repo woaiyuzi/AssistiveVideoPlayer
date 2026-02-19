@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -52,12 +53,17 @@ fun VideoPlayerScreen(
 
     var shouldPlay by remember { mutableStateOf(false) }
 
+    val view = LocalView.current
+
     LifecycleStartEffect(Unit) {
         shouldPlay = true
+        view.keepScreenOn = true
+
         onStopOrDispose {
             viewModel.saveLastVideoState()
             onStop(currentVideo)
             shouldPlay = false
+            view.keepScreenOn = false
         }
     }
 
@@ -256,11 +262,12 @@ private fun VideoPlayerPager(
             }
         )
 
+        playerState.prepare()
+
         LaunchedEffect(isCurrentPage, onPageSelect) {
             if (isCurrentPage) {
                 onPageSelect(video, playerState)
                 playerState.seekTo(currentVideo?.position ?: 0L)
-                playerState.prepare()
                 Timber.d("Video page selected: $page")
             }
         }
