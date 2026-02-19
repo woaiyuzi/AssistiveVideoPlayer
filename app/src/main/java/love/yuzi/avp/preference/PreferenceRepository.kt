@@ -14,29 +14,22 @@ class PreferenceRepository(
 ) {
     companion object {
         private val lastPlayedVideoIdKey = longPreferencesKey("last_played_video_id")
-        private val lastPlayedVideoPositionKey = longPreferencesKey("last_played_video_position")
     }
 
     var lastPlayedVideoId: Long? = null
-        private set
-
-    var lastPlayedVideoPosition: Long = 0L
         private set
 
     init {
         scope.launch {
             val prefs = dataStore.data.first()
             lastPlayedVideoId = prefs[lastPlayedVideoIdKey]
-            lastPlayedVideoPosition = prefs[lastPlayedVideoPositionKey] ?: 0L
         }
     }
 
-    fun setPlayback(videoId: Long?, position: Long) = scope.launch {
+    fun setLastPlayedVideoId(videoId: Long) = scope.launch {
         lastPlayedVideoId = videoId
-        lastPlayedVideoPosition = position
         dataStore.edit {
-            videoId?.let { id -> it[lastPlayedVideoIdKey] = id }
-            it[lastPlayedVideoPositionKey] = position
+            it[lastPlayedVideoIdKey] = videoId
         }
     }
 }

@@ -18,4 +18,10 @@ interface VideoDao {
 
     @Query("SELECT * FROM video WHERE programTitle = :programTitle ORDER BY id ASC")
     suspend fun getByProgramTitle(programTitle: String): List<VideoEntity>
+
+    @Query("UPDATE video SET position = :position WHERE id = :videoId")
+    suspend fun updatePosition(videoId: Long, position: Long)
+
+    @Query("SELECT * FROM video WHERE id = :id")
+    suspend fun getVideoById(id: Long): VideoEntity?
 }

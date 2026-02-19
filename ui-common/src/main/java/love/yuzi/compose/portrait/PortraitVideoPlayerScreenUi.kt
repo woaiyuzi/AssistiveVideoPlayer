@@ -25,11 +25,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.compose.buttons.PlayPauseButton
-import kotlinx.coroutines.flow.StateFlow
 import love.yuzi.compose.foundation.ActionIcon
 import love.yuzi.compose.foundation.ProgramTitle
 import love.yuzi.compose.foundation.ProgressBar
@@ -46,15 +44,14 @@ class PortraitVideoPlayerScreenUi : VideoPlayerScreenUi {
     @Composable
     override fun TopBar(
         videos: List<Video>,
-        currentVideoState: StateFlow<Video?>,
+        currentVideo: Video?,
         onBack: () -> Unit,
         onRequestVideoManager: () -> Unit
     ) {
-        val video = currentVideoState.collectAsStateWithLifecycle().value
-
-        video?.let {
+        currentVideo?.let {
             VideoPlayerTopBar(
-                onBack = onBack, title = video.title
+                onBack = onBack,
+                title = currentVideo.title
             ) {
                 ActionIcon(
                     imageVector = Icons.Rounded.MovieFilter,
@@ -68,14 +65,14 @@ class PortraitVideoPlayerScreenUi : VideoPlayerScreenUi {
     @Composable
     override fun BottomBar(
         videos: List<Video>,
-        currentVideoState: StateFlow<Video?>,
+        currentVideo: Video?,
         onRequestSwitchVideo: (Video) -> Unit
     ) {
-        val video = currentVideoState.collectAsStateWithLifecycle().value
-
-        if (video != null) {
+        if (currentVideo != null) {
             VideoSwitch(
-                videos = videos, video = video, onRequestSwitchVideo = onRequestSwitchVideo
+                videos = videos,
+                currentVideo = currentVideo,
+                onRequestSwitchVideo = onRequestSwitchVideo
             )
         }
     }
@@ -85,15 +82,17 @@ class PortraitVideoPlayerScreenUi : VideoPlayerScreenUi {
     @Composable
     override fun VideoPlayerItemWrapper(
         videos: List<Video>,
-        video: Video,
-        playerState: VideoPlayerState,
+        currentVideo: Video,
+        currentPlayerState: VideoPlayerState,
         onRequestProgramDetail: (String) -> Unit,
         modifier: Modifier
     ) {
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .clickable(onClick = { playerState.playWhenReady = !(playerState.playWhenReady) }),
+                .clickable(onClick = {
+                    currentPlayerState.playWhenReady = !(currentPlayerState.playWhenReady)
+                }),
             contentAlignment = Alignment.Center
         ) {
             Box(
@@ -102,7 +101,7 @@ class PortraitVideoPlayerScreenUi : VideoPlayerScreenUi {
                 contentAlignment = Alignment.TopStart
             ) {
                 VideoPlayer(
-                    state = playerState,
+                    state = currentPlayerState,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
@@ -111,12 +110,12 @@ class PortraitVideoPlayerScreenUi : VideoPlayerScreenUi {
             }
 
             VideoPlayerItemOverlay(
-                programTitle = video.programTitle,
-                player = playerState.player,
-                onRequestProgramDetail = { onRequestProgramDetail(video.programTitle) },
+                programTitle = currentVideo.programTitle,
+                player = currentPlayerState.player,
+                onRequestProgramDetail = { onRequestProgramDetail(currentVideo.programTitle) },
             )
 
-            PlayPauseButton(playerState.player) {
+            PlayPauseButton(currentPlayerState.player) {
                 if (showPlay) {
                     WhiteIcon(
                         imageVector = Icons.Rounded.PlayArrow,
@@ -154,18 +153,21 @@ private fun BoxScope.VideoPlayerItemOverlay(
 @Suppress("UnstableCollections")
 @Composable
 private fun VideoSwitch(
-    videos: List<Video>, video: Video?, onRequestSwitchVideo: (Video) -> Unit
+    videos: List<Video>, currentVideo: Video?, onRequestSwitchVideo: (Video) -> Unit
 ) {
 
     val currentProgramVideoCount =
-        remember(videos, video) { videos.filter { it.programTitle == video?.programTitle }.size }
+        remember(
+            videos,
+            currentVideo
+        ) { videos.filter { it.programTitle == currentVideo?.programTitle }.size }
 
-    if (video != null) {
+    if (currentVideo != null) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .clickable(onClick = { onRequestSwitchVideo(video) })
+                .clickable(onClick = { onRequestSwitchVideo(currentVideo) })
                 .padding(vertical = 4.dp, horizontal = 16.dp)
                 .padding(bottom = 4.dp),
         ) {

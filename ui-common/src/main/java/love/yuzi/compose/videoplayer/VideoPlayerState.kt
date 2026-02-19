@@ -21,8 +21,6 @@ class VideoPlayerState(
 
     init {
         player.setMediaItem(MediaItem.fromUri(uri))
-        player.seekTo(initialPosition)
-        player.prepare()
         Timber.d("Player Prepared: $uri at $initialPosition")
     }
 
@@ -33,6 +31,14 @@ class VideoPlayerState(
         set(value) {
             player.playWhenReady = value
         }
+
+    fun seekTo(position: Long) {
+        player.seekTo(position)
+    }
+
+    fun prepare() {
+        player.prepare()
+    }
 }
 
 @Composable

@@ -1,7 +1,6 @@
 package love.yuzi.avp.ui
 
 import android.os.Bundle
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,13 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
@@ -34,8 +29,6 @@ import love.yuzi.avp.ui.nav.HomeNavKey
 import love.yuzi.avp.ui.nav.VideoManagerNavKey
 import love.yuzi.avp.ui.theme.AssistiveVideoPlayerTheme
 import love.yuzi.avp.videomanager.VideoManagerScreen
-import love.yuzi.avp.videoplayer.state.rememberPlaybackState
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -80,33 +73,17 @@ class MainActivity : ComponentActivity() {
         backStack: NavBackStack<NavKey>
     ) {
         entry<HomeNavKey> {
-            val playbackState = rememberPlaybackState(
-                initialVideoId = preferenceRepository.lastPlayedVideoId,
-                initialPosition = preferenceRepository.lastPlayedVideoPosition,
-            )
-
-            var isActive by remember { mutableStateOf(false) }
-
-            LifecycleStartEffect(Unit) {
-                isActive = true
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
-                onStopOrDispose {
-                    isActive = false
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                    preferenceRepository.setPlayback(
-                        videoId = playbackState.videoId,
-                        position = playbackState.currentPosition
-                    )
-                    Timber.d("Report playback: videoId=${playbackState.videoId}, position=${playbackState.currentPosition}")
-                }
-            }
-
             val context = LocalContext.current
             HomeScreen(
-                playbackState = playbackState,
-                isActive = isActive,
-                onBack = { moveTaskToBack(true) },
+                initialVideoId = preferenceRepository.lastPlayedVideoId,
+                onBack = {
+                    moveTaskToBack(true)
+                },
+                onStop = { video ->
+                    if (video != null) {
+                        preferenceRepository.setLastPlayedVideoId(video.id)
+                    }
+                },
                 onRequestSwitchVideo = {
                     Toast.makeText(
                         context,

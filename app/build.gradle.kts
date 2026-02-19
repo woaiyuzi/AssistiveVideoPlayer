@@ -35,6 +35,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+//    room {
+//        schemaDirectory "$projectDir/schemas"
+//    }
+
     flavorDimensions.add("version")
 
     productFlavors {
@@ -83,7 +87,7 @@ android {
             )
         }
     }
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
