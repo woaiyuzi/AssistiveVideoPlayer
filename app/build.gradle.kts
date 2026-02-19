@@ -35,10 +35,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-//    room {
-//        schemaDirectory "$projectDir/schemas"
-//    }
-
     flavorDimensions.add("version")
 
     productFlavors {
